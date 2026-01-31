@@ -1,0 +1,33 @@
+{
+	"schemaVersion": 1,
+	"id": "oneauras-cart-optimizer",
+	"version": "${version}",
+	"name": "oneaura's Cart Optimizer",
+	"description": "A mod that fixes carts ghosting when you place them.",
+	"authors": [
+		"oneaura"
+	],
+	"contact": {
+		"sources": "https://github.com/oneauraaa/oneauras-cart-optimizer"
+	},
+	"license": "MIT",
+	"icon": "assets/oneauras-cart-optimizer/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"oneaura.cartoptimizer.OneaurasCartOptimizer"
+		],
+		"client": [
+			"oneaura.cartoptimizer.OneaurasCartOptimizerClient"
+		]
+	},
+	"mixins": [
+		"oneauras-cart-optimizer.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.18.4",
+		"minecraft": "~1.21.11",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}
