@@ -26,7 +26,7 @@ public class ClientPlayerInteractionManagerMixin {
             ItemStack stack = player.getStackInHand(hand);
 
             // Handle Minecarts
-            if (isMinecart(stack) && oneaura.cartoptimizer.ModConfig.getInstance().isEnabled()) {
+            if (isMinecart(stack) && oneaura.cartoptimizer.ModConfig.getInstance().isEffectivelyEnabled()) {
                 // Check if target is a rail
                 if (player.getEntityWorld().getBlockState(hitResult.getBlockPos()).isIn(BlockTags.RAILS)) {
                     // Logic for placement

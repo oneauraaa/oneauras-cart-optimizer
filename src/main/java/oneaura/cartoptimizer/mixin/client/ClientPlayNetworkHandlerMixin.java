@@ -1,6 +1,9 @@
 package oneaura.cartoptimizer.mixin.client;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.client.network.ServerInfo;
+import net.minecraft.network.packet.s2c.play.GameJoinS2CPacket;
 import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -13,9 +16,33 @@ import org.slf4j.LoggerFactory;
 public class ClientPlayNetworkHandlerMixin {
     private static final Logger LOGGER = LoggerFactory.getLogger("oneauras-cart-optimizer-cpnh");
 
+    @Inject(method = "onGameJoin", at = @At("TAIL"))
+    private void onGameJoin(GameJoinS2CPacket packet, CallbackInfo ci) {
+        ServerInfo serverInfo = MinecraftClient.getInstance().getCurrentServerEntry();
+        if (serverInfo != null) {
+            String serverAddress = serverInfo.address;
+            oneaura.cartoptimizer.ServerBlacklist.getInstance().setCurrentServer(serverAddress);
+            LOGGER.info("[Cart Optimizer] Joined server: " + serverAddress);
+
+            if (oneaura.cartoptimizer.ServerBlacklist.getInstance().isOnBlacklistedServer()) {
+                LOGGER.info("[Cart Optimizer] Server is blacklisted - mod disabled.");
+
+                // Send chat message to player
+                net.minecraft.client.network.ClientPlayerEntity player = MinecraftClient.getInstance().player;
+                if (player != null) {
+                    player.sendMessage(
+                            net.minecraft.text.Text.of("§c[Cart Optimizer] Cart Optimizer is disabled on this server."),
+                            false);
+                }
+            }
+        } else {
+            oneaura.cartoptimizer.ServerBlacklist.getInstance().clearServer();
+        }
+    }
+
     @Inject(method = "onScreenHandlerSlotUpdate", at = @At("HEAD"), cancellable = true)
     private void onScreenHandlerSlotUpdate(ScreenHandlerSlotUpdateS2CPacket packet, CallbackInfo ci) {
-        if (!oneaura.cartoptimizer.ModConfig.getInstance().isEnabled())
+        if (!oneaura.cartoptimizer.ModConfig.getInstance().isEffectivelyEnabled())
             return;
 
         // SyncId 0 is the player's inventory/container
@@ -30,7 +57,7 @@ public class ClientPlayNetworkHandlerMixin {
 
     @Inject(method = "onInventory", at = @At("HEAD"))
     private void onInventory(net.minecraft.network.packet.s2c.play.InventoryS2CPacket packet, CallbackInfo ci) {
-        if (!oneaura.cartoptimizer.ModConfig.getInstance().isEnabled())
+        if (!oneaura.cartoptimizer.ModConfig.getInstance().isEffectivelyEnabled())
             return;
 
         if (packet.syncId() == 0) {
