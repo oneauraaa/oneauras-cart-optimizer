@@ -25,12 +25,7 @@ public class ModConfig {
         this.enabled = enabled;
     }
 
-    /**
-     * Returns true if the mod is enabled AND not on a blacklisted server.
-     */
     public boolean isEffectivelyEnabled() {
-        if (!enabled)
-            return false;
-        return !ServerBlacklist.getInstance().isOnBlacklistedServer();
+        return enabled;
     }
 }
